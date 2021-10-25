@@ -47,7 +47,7 @@
 #' Landsat 7 Metadata example file available from the U.S. Geological Survey.
 #' Weather Station example file courtesy of CITRA, Universidad de Talca, Chile
 #' @export
-read.WSdata <- function(WSdata, ..., height = 2.2, lat, long, elev,
+read.WSdata <- function(WSdata, ..., height = 2.2, lat, long, elev, FC = 0.35, WP = 0.15, ze = 0.1, REW = 5, D_ini = 0,
                         columns=c("date" = 1, "time" = 2, "radiation" = 3,
                                   "wind" = 4, "RH" = 6, "temp" = 7, "rain" = 8),
                         date.format = "%Y-%m-%d", time.format = "%H:%M:%S", 
@@ -110,9 +110,42 @@ read.WSdata <- function(WSdata, ..., height = 2.2, lat, long, elev,
     
   }
   
+  # This is big simplification just for first testing - it should be better linked to ETo computation
+  timestep <- as.numeric(difftime(datetime[2],datetime[1], units = 'sec'))
+  PET <- 0.5*radiation
+  PET <- ifelse(PET<0,0,PET)
+  PET <- 0.408*PET*timestep/(10^6)
+  
+  # Now following FAO56
+  # Ke sumbodule
+  
+  # TEW - Total evaporable water
+  # ze - depth of the surface soil layer that is subject to drying by way of evaporation (0.10-0.15 m)
+  # FC - soil moisture at field capacity
+  # WP - soil moisture at wilting point
+  # REW - readily evaporable water)
+  TEW <- 1000*(FC-0.5*WP)*ze
+  
+  N <- length(PET)
+  
+  D <- rep(NA, N)
+  Kr <- rep(NA, N)
+  Ke <- rep(NA, N)
+  E <- rep(NA, N)
+  
+  Kr[1] = (TEW-D_ini)/(TEW-REW)
+  Ke[1] = max(min(Kr[1],1),0)
+  D[1] = max(D_ini-rain[1]+Ke[1]*PET[1],0)
+  
+  for(i in 2:N){
+    Kr[i] = (TEW-D[i-1])/(TEW-REW)
+    Ke[i] = max(min(Kr[i],1),0)
+    D[i] = max(D[i-1]-rain[i]+Ke[i]*PET[i],0)
+  }
+  
   ea = (RH/100)*0.6108*exp((17.27*temp)/(temp+237.3))
   WSdata <- data.frame(datetime=datetime, radiation=radiation, wind=wind,
-                       RH=RH, ea=ea, temp=temp, rain=rain)
+                       RH=RH, ea=ea, temp=temp, rain=rain, Ke=Ke)
   result$alldata <- WSdata
   ## Daily
   WSdata$date <- as.Date(WSdata$datetime, tz = tz)
@@ -124,7 +157,8 @@ read.WSdata <- function(WSdata, ..., height = 2.2, lat, long, elev,
                              temp_max=tapply(WSdata$temp, WSdata$date, max),
                              temp_min=tapply(WSdata$temp, WSdata$date, min),
                              ea_mean=tapply(WSdata$ea, WSdata$date, mean),
-                             rain_sum=tapply(WSdata$rain, WSdata$date, sum))
+                             rain_sum=tapply(WSdata$rain, WSdata$date, sum),
+                             Ke_mean=tapply(WSdata$Ke, WSdata$date, mean))
   ## Hourly
 
   result$hourly <- list()
