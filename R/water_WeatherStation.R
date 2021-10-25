@@ -142,10 +142,12 @@ read.WSdata <- function(WSdata, ..., height = 2.2, lat, long, elev, FC = 0.35, W
     Ke[i] = max(min(Kr[i],1),0)
     D[i] = max(D[i-1]-rain[i]+Ke[i]*PET[i],0)
   }
+  result$soil <- data.frame(FC=FC, WP=WP, ze=ze, REW=REW, TEW=TEW)
+  
   
   ea = (RH/100)*0.6108*exp((17.27*temp)/(temp+237.3))
   WSdata <- data.frame(datetime=datetime, radiation=radiation, wind=wind,
-                       RH=RH, ea=ea, temp=temp, rain=rain, Ke=Ke)
+                       RH=RH, ea=ea, temp=temp, rain=rain, Ke=Ke, D=D)
   result$alldata <- WSdata
   ## Daily
   WSdata$date <- as.Date(WSdata$datetime, tz = tz)
@@ -158,7 +160,9 @@ read.WSdata <- function(WSdata, ..., height = 2.2, lat, long, elev, FC = 0.35, W
                              temp_min=tapply(WSdata$temp, WSdata$date, min),
                              ea_mean=tapply(WSdata$ea, WSdata$date, mean),
                              rain_sum=tapply(WSdata$rain, WSdata$date, sum),
-                             Ke_mean=tapply(WSdata$Ke, WSdata$date, mean))
+                             Ke_mean=tapply(WSdata$Ke, WSdata$date, mean),
+                             D_mean=tapply(WSdata$D, WSdata$date, mean))
+  
   ## Hourly
 
   result$hourly <- list()
@@ -353,12 +357,14 @@ print.waterWeatherStation <- function(x, ...){
   cat("Weather Station @ lat:", round(x$location$lat, 2), "long:", 
       round(x$location$long, 2), "elev:", round(x$location$elev, 2), "\n")
   cat("Summary:\n")
-  print(summary(x$alldata[,2:7]), ...)
+  print(summary(x$alldata[,2:ncol(x$alldata)]), ...)
   if(!is.null(x$at.sat)){
   cat("\n Conditions at satellite flyby:\n")
   print(x$at.sat)}
+  cat("\n Topsoil parameters:\n")
+  cat("FC:", round(x$soil$FC, 2), "WP:", 
+      round(x$soil$WP, 2), "ze:", round(x$soil$ze, 2),"m", "TEW:", round(x$soil$TEW, 2),"mm", "REW:", round(x$soil$REW, 2),"mm", "\n")
 }
-
 
 #' Export data.frame from waterWeatherStation Object
 #' @description 
