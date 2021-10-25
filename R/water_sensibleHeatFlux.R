@@ -508,7 +508,7 @@ calcAnchors  <- function(image, Ts, LAI, albedo, Z.om, n=1, aoi,
 #'
 #' Allen, R., Irmak, A., Trezza, R., Hendrickx, J.M.H., Bastiaanssen, W., Kjaersgaard, J., 2011. Satellite-based ET estimation in agriculture using SEBAL and METRIC. Hydrol. Process. 25, 4011-4027. doi:10.1002/hyp.8408 \cr
 #' @export
-calcH  <- function(anchors, method = "mean", Ts, Z.om, WeatherStation, ETp.coef= 1.05, 
+calcH  <- function(anchors, method = "mean", Ts, Z.om, WeatherStation, ETp.coef = 1.05, Ke_hot = 0, 
                    Z.om.ws=0.03, mountainous=FALSE, 
                    DEM, Rn, G, verbose=FALSE, maxit = 20) {
   if(class(WeatherStation)== "waterWeatherStation"){
@@ -546,7 +546,12 @@ calcH  <- function(anchors, method = "mean", Ts, Z.om, WeatherStation, ETp.coef=
   r.ah <- log(2/0.1)/(friction.velocity*0.41) #ok
   
   LE.cold <- ETo.hourly * ETp.coef * (2.501 - 0.002361*(mean(Ts[cold])-273.15))*
+    (1e6)/3600
+  
+  # Considering that LE of hot pixels is not necessarily equal to zero
+  LE.hot <- Ke_hot * ETo.hourly * (2.501 - 0.002361*(mean(Ts[hot])-273.15))*
     (1e6)/3600 
+  
   # here uses latent.heat.vapo
   H.cold <- mean(Rn[cold], na.rm= T) - mean(G[cold], na.rm= T) - LE.cold #ok
   result <- list()
@@ -576,7 +581,12 @@ calcH  <- function(anchors, method = "mean", Ts, Z.om, WeatherStation, ETp.coef=
       i <-  i + 1 
       ### We calculate dT and H 
       dT.cold <- H.cold * mean(r.ah[cold], na.rm= T) / (mean(air.density[cold], na.rm= T)*1004)
-      dT.hot <- (mean(Rn[hot], na.rm= T) - mean(G[hot], na.rm= T)) * mean(r.ah[hot], na.rm= T) / (mean(air.density[hot], na.rm= T)*1004)
+      
+      # dT.hot <- (mean(Rn[hot], na.rm= T) - mean(G[hot], na.rm= T)) * mean(r.ah[hot], na.rm= T) / (mean(air.density[hot], na.rm= T)*1004)
+      
+      # Considering that LE of hot pixels is not necessarily equal to zero
+      dT.hot <- (mean(Rn[hot], na.rm= T) - mean(G[hot], na.rm= T) - LE.hot) * mean(r.ah[hot], na.rm= T) / (mean(air.density[hot], na.rm= T)*1004)
+      
       a <- (dT.hot - dT.cold) / (mean(Ts.datum[hot], na.rm= T) - mean(Ts.datum[cold], na.rm= T))
       b <- -a * mean(Ts.datum[cold], na.rm= T) + dT.cold
       if(verbose==TRUE){
@@ -655,7 +665,7 @@ calcH  <- function(anchors, method = "mean", Ts, Z.om, WeatherStation, ETp.coef=
         }
         ### We calculate dT and H 
         dT.cold <- H.cold * r.ah[cold[pair]] / (air.density[cold[pair]]*1004)
-        dT.hot <- (Rn[hot[pair]] - G[hot[pair]]) * r.ah[hot[pair]] / (air.density[hot[pair]]*1004)
+        dT.hot <- (Rn[hot[pair]] - G[hot[pair]] - LE.hot) * r.ah[hot[pair]] / (air.density[hot[pair]]*1004)
         a <- (dT.hot - dT.cold) / (Ts.datum[hot[pair]] - Ts.datum[cold[pair]])
         b <- -a * Ts.datum[cold[pair]] + dT.cold
         if(verbose==TRUE){

@@ -284,7 +284,7 @@ METRIC.EB <- function(image.DN, image.SR, WeatherStation, MTL, sat = "auto",
 
   }
   H <- calcH(anchors = anchors, Ts = Ts, Z.om = Z.om, mountainous = !plain,
-             WeatherStation = WeatherStation, ETp.coef = ETp.coef,
+             WeatherStation = WeatherStation, ETp.coef = ETp.coef, Ke_hot = Ke_hot,
              Z.om.ws = Z.om.ws, DEM = DEM, Rn = Rn, G = G, verbose = verbose)
   par(mfrow=c(1,1))
   #setTxtProgressBar(pb, 99)
