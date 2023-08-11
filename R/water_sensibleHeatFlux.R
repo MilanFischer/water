@@ -633,7 +633,7 @@ calcH  <- function(anchors, method = "mean", Ts, Z.om, WeatherStation, ETp.coef 
       r.ah.hot.previous <- mean(r.ah[hot], na.rm= T)
       r.ah.cold.previous <- mean(r.ah[cold], na.rm= T)
       ### -----------
-      r.ah <- (log(2/0.1) - phi.2 + phi.01) / (friction.velocity * 0.41) # ok ok
+      r.ah <- (log(200/Z.om) - phi.200) / (friction.velocity * 0.41) # ok ok
       ## Update plot
       graphics::points(i, mean(r.ah[hot], na.rm= T), col="red", pch=20)
       graphics::points(i, mean(r.ah[cold], na.rm= T), col="blue", pch=20)
