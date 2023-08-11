@@ -543,9 +543,7 @@ calcH  <- function(anchors, method = "mean", Ts, Z.om, WeatherStation, ETp.coef 
   }
   friction.velocity <- 0.41 * u200 / log(200/Z.om) 
   friction.velocity[friction.velocity==0] <- 0.1
-  
-  # Need to be checked why z=2 m and zom=0.1 m. Also, why d is not considered?
-  r.ah <- log(200/Z.om)/(friction.velocity*0.41) #ok
+  r.ah <- log(2/0.1)/(friction.velocity*0.41) #ok
   
   LE.cold <- ETo.hourly * ETp.coef * (2.501 - 0.002361*(mean(Ts[cold])-273.15))*
     (1e6)/3600
@@ -607,7 +605,7 @@ calcH  <- function(anchors, method = "mean", Ts, Z.om, WeatherStation, ETp.coef 
       phi.2 <- raster(Monin.Obukhov.L)
       phi.01 <- raster(Monin.Obukhov.L)
       ## stable condition = L > 0
-      phi.200[Monin.Obukhov.L > 0] <- -5*(200/Monin.Obukhov.L)[Monin.Obukhov.L > 0] #ok
+      phi.200[Monin.Obukhov.L > 0] <- -5*(2/Monin.Obukhov.L)[Monin.Obukhov.L > 0] #ok
       phi.2[Monin.Obukhov.L > 0] <- -5*(2/Monin.Obukhov.L)[Monin.Obukhov.L > 0]  #ok
       phi.01[Monin.Obukhov.L > 0] <-  -5*(0.1/Monin.Obukhov.L)[Monin.Obukhov.L > 0] #ok
       ## unstable condition = L < 0
@@ -633,7 +631,7 @@ calcH  <- function(anchors, method = "mean", Ts, Z.om, WeatherStation, ETp.coef 
       r.ah.hot.previous <- mean(r.ah[hot], na.rm= T)
       r.ah.cold.previous <- mean(r.ah[cold], na.rm= T)
       ### -----------
-      r.ah <- (log(200/Z.om) - phi.200) / (friction.velocity * 0.41) # ok ok
+      r.ah <- (log(2/0.1) - phi.2 + phi.01) / (friction.velocity * 0.41) # ok ok
       ## Update plot
       graphics::points(i, mean(r.ah[hot], na.rm= T), col="red", pch=20)
       graphics::points(i, mean(r.ah[cold], na.rm= T), col="blue", pch=20)
@@ -686,7 +684,7 @@ calcH  <- function(anchors, method = "mean", Ts, Z.om, WeatherStation, ETp.coef 
         phi.2 <- raster(Monin.Obukhov.L)
         phi.01 <- raster(Monin.Obukhov.L)
         ## stable condition = L > 0
-        phi.200[Monin.Obukhov.L > 0] <- -5*(200/Monin.Obukhov.L)[Monin.Obukhov.L > 0] #ok
+        phi.200[Monin.Obukhov.L > 0] <- -5*(2/Monin.Obukhov.L)[Monin.Obukhov.L > 0] #ok
         phi.2[Monin.Obukhov.L > 0] <- -5*(2/Monin.Obukhov.L)[Monin.Obukhov.L > 0]  #ok
         phi.01[Monin.Obukhov.L > 0] <-  -5*(0.1/Monin.Obukhov.L)[Monin.Obukhov.L > 0] #ok
         ## unstable condition = L < 0
@@ -711,7 +709,7 @@ calcH  <- function(anchors, method = "mean", Ts, Z.om, WeatherStation, ETp.coef 
         r.ah.hot.previous <- r.ah[hot[pair]]
         r.ah.cold.previous <- r.ah[cold[pair]]
         ### -----------
-        r.ah <- (log(200/Z.om) - phi.200) / (friction.velocity * 0.41) # ok ok
+        r.ah <- (log(2/0.1) - phi.2 + phi.01) / (friction.velocity * 0.41) # ok ok
         ## Update plot
         graphics::points(i, r.ah[hot[pair]], col="red", pch=20)
         graphics::points(i, r.ah[cold[pair]], col="blue", pch=20)
