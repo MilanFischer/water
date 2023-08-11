@@ -605,7 +605,7 @@ calcH  <- function(anchors, method = "mean", Ts, Z.om, WeatherStation, ETp.coef 
       phi.2 <- raster(Monin.Obukhov.L)
       phi.01 <- raster(Monin.Obukhov.L)
       ## stable condition = L > 0
-      phi.200[Monin.Obukhov.L > 0] <- -5*(2/Monin.Obukhov.L)[Monin.Obukhov.L > 0] #ok
+      phi.200[Monin.Obukhov.L > 0] <- -5*(200/Monin.Obukhov.L)[Monin.Obukhov.L > 0] #ok
       phi.2[Monin.Obukhov.L > 0] <- -5*(2/Monin.Obukhov.L)[Monin.Obukhov.L > 0]  #ok
       phi.01[Monin.Obukhov.L > 0] <-  -5*(0.1/Monin.Obukhov.L)[Monin.Obukhov.L > 0] #ok
       ## unstable condition = L < 0
