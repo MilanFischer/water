@@ -543,6 +543,8 @@ calcH  <- function(anchors, method = "mean", Ts, Z.om, WeatherStation, ETp.coef 
   }
   friction.velocity <- 0.41 * u200 / log(200/Z.om) 
   friction.velocity[friction.velocity==0] <- 0.1
+  
+  # Need to eb checked why z=2 m and zom=0.1 m. Also, why d is not considered?
   r.ah <- log(2/0.1)/(friction.velocity*0.41) #ok
   
   LE.cold <- ETo.hourly * ETp.coef * (2.501 - 0.002361*(mean(Ts[cold])-273.15))*
